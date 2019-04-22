@@ -1,0 +1,14 @@
+name: phylotate
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - r
+  - antoined
+dependencies:
+  - python=3.6.3
+  - diamond
+  - transdecoder
+  - r-phytools
+  - pip:
+    - biopython
