@@ -21,15 +21,21 @@ VERSION := ${shell cat  ${MAKEDIR}/version.txt}
 .DEFAULT_GOAL := main
 
 help:
-main: setup welcome assemblycheck blast
+main: setup welcome assemblycheck transdecoder blast files align_files
 blast:${DIR}/blast/${RUNOUT}.diamond
-setup:${DIR}/blast
+setup:${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT}
+files:${DIR}/blast/${RUNOUT}.files.done
+align_files:${DIR}/alignment/${RUNOUT}/alignment.files.done
+transdecoder:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep
 
 .DELETE_ON_ERROR:
-.PHONY:report check assemblycheck
+.PHONY:check assemblycheck
 
-${DIR}/blast:
+${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT}:
 	@mkdir -p ${DIR}/blast
+	@mkdir -p ${DIR}/transdecoder/${RUNOUT}
+	@mkdir -p ${DIR}/alignment/${RUNOUT}
+
 
 
 help:
@@ -52,6 +58,18 @@ welcome:
 	printf "*****  This is version ${VERSION} ***** \n\n "
 	printf " \n\n"
 
-${DIR}/blast/${RUNOUT}.diamond:${ASSEMBLY} ${DB}
-	printf "\n\n*****  I'm using DIAMOND to identify potential homologous sequences ***** \n"
-	cat ${ASSEMBLY} | parallel  --block 200k --recstart '>' --pipe --round-robin --line-buffer -j $(CPU) "diamond blastx --outfmt 6 qseqid sseqid evalue -p $(CPU) -e ${EVALUE} --top ${DB} -q - -d ${DB}" > ${DIR}/blast/${RUNOUT}.diamond
+${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep:${ASSEMBLY}
+	TransDecoder.LongOrfs -t ${ASSEMBLY} --output_dir ${DIR}/transdecoder/${RUNOUT}/
+
+${DIR}/blast/${RUNOUT}.diamond:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${DB}
+	printf "\n\n*****  I'm using DIAMOND to identify potential homologous sequences ***** \n\n"
+	cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep | parallel  --block 200k --recstart '>' --pipe --round-robin --line-buffer -j $(CPU) "diamond blastp --outfmt 6 qseqid sseqid evalue -p $(CPU) -e ${EVALUE} --top ${DB} -q - -d ${DB}" > ${DIR}/blast/${RUNOUT}.diamond
+
+${DIR}/blast/${RUNOUT}.files.done:${DIR}/blast/${RUNOUT}.diamond
+	printf "\n\n*****  I'm making files for all the blast hits ***** \n\n"
+	for i in  $$(cut -f1  ${DIR}/blast/${RUNOUT}.diamond | sort -u); do grep -Fw $$i ${DIR}/blast/${RUNOUT}.diamond | awk '{print $$1 "\n" $$2}' | sort -u --parallel $(CPU) ${DIR}/blast/$i.txt; done
+	touch ${DIR}/blast/${RUNOUT}.files.done
+
+${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.done
+	find ${DIR}/blast/ -name '*txt' 2> /dev/null | parallel -j $(CPU) "python ${MAKEDIR}/scripts/filter.py <(cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${MAKEDIR}/software/diamond/uniprot_sprot.fasta) {} > ${DIR}/alignment/${RUNOUT}/{1}.fasta 2> /dev/null"
+	touch ${DIR}/alignment/${RUNOUT}/alignment.files.done
