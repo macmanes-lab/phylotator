@@ -72,5 +72,5 @@ ${DIR}/blast/${RUNOUT}.files.done:${DIR}/blast/${RUNOUT}.diamond
 
 ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.done
 	printf "\n\n*****  I'm making fasta files for alignment ***** \n\n"
-	ls ${DIR}/blast/*txt 2> /dev/null | parallel -j $(CPU) "python ${MAKEDIR}/scripts/filter.py <(cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${MAKEDIR}/software/diamond/uniprot_sprot.fasta) {} > ${DIR}/alignment/${RUNOUT}/$$i.fasta 2> /dev/null"
+	ls ${DIR}/blast/*txt 2> /dev/null | parallel -j $(CPU) "python ${MAKEDIR}/scripts/filter.py <(cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${MAKEDIR}/software/diamond/uniprot_sprot.fasta) {} > ${DIR}/alignment/${RUNOUT}/{/}.fasta 2> /dev/null"
 	touch ${DIR}/alignment/${RUNOUT}/alignment.files.done
