@@ -67,9 +67,10 @@ ${DIR}/blast/${RUNOUT}.diamond:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${
 
 ${DIR}/blast/${RUNOUT}.files.done:${DIR}/blast/${RUNOUT}.diamond
 	printf "\n\n*****  I'm making files for all the blast hits ***** \n\n"
-	for i in  $$(cut -f1  ${DIR}/blast/${RUNOUT}.diamond | sort -u --parallel); do grep -Fw $$i ${DIR}/blast/${RUNOUT}.diamond | awk '{print $$1 "\n" $$2}' | sort -u --parallel $(CPU) > ${DIR}/blast/$$i.txt; done
+	for i in  $$(cut -f1  ${DIR}/blast/${RUNOUT}.diamond | sort -u --parallel $(CPU)); do grep -Fw $$i ${DIR}/blast/${RUNOUT}.diamond | awk '{print $$1 "\n" $$2}' | sort -u --parallel $(CPU) > ${DIR}/blast/$$i.txt; done
 	touch ${DIR}/blast/${RUNOUT}.files.done
 
 ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.done
+	printf "\n\n*****  I'm making fasta files for alignment ***** \n\n"
 	find ${DIR}/blast/ -name '*txt' 2> /dev/null | parallel -j $(CPU) "python ${MAKEDIR}/scripts/filter.py <(cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${MAKEDIR}/software/diamond/uniprot_sprot.fasta) {} > ${DIR}/alignment/${RUNOUT}/{1}.fasta 2> /dev/null"
 	touch ${DIR}/alignment/${RUNOUT}/alignment.files.done
