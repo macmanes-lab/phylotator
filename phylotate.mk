@@ -53,4 +53,5 @@ welcome:
 	printf " \n\n"
 
 ${DIR}/blast/${RUNOUT}.diamond:${ASSEMBLY} ${DB}
-	cat ${ASSEMBLY} | parallel  --block 200k --recstart '>' --pipe --round-robin --line-buffer -j $(CPU) "diamond blastx -p $(CPU) -e ${EVALUE} --top ${DB} -q - -d ${DB}" > ${DIR}/blast/${RUNOUT}.diamond
+	printf "\n\n*****  I'm using DIAMOND to identify potential homologous sequences ***** \n"
+	cat ${ASSEMBLY} | parallel  --block 200k --recstart '>' --pipe --round-robin --line-buffer -j $(CPU) "diamond blastx --outfmt 6 qseqid sseqid evalue -p $(CPU) -e ${EVALUE} --top ${DB} -q - -d ${DB}" > ${DIR}/blast/${RUNOUT}.diamond
