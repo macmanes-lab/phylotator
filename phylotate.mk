@@ -59,7 +59,7 @@ welcome:
 	printf " \n\n"
 
 ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep:${ASSEMBLY}
-	TransDecoder.LongOrfs -t ${ASSEMBLY} --quiet --output_dir ${DIR}/transdecoder/${RUNOUT}/
+	TransDecoder.LongOrfs -t ${ASSEMBLY} --output_dir ${DIR}/transdecoder/${RUNOUT}/
 
 ${DIR}/blast/${RUNOUT}.diamond:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${DB}
 	printf "\n\n*****  I'm using DIAMOND to identify potential homologous sequences ***** \n\n"
