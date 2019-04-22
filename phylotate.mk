@@ -59,7 +59,7 @@ welcome:
 	printf " \n\n"
 
 ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep:${ASSEMBLY}
-	TransDecoder.LongOrfs -t ${ASSEMBLY} --output_dir ${DIR}/transdecoder/${RUNOUT}/
+	TransDecoder.LongOrfs -t ${ASSEMBLY} --quiet --output_dir ${DIR}/transdecoder/${RUNOUT}/
 
 ${DIR}/blast/${RUNOUT}.diamond:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${DB}
 	printf "\n\n*****  I'm using DIAMOND to identify potential homologous sequences ***** \n\n"
@@ -67,7 +67,7 @@ ${DIR}/blast/${RUNOUT}.diamond:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${
 
 ${DIR}/blast/${RUNOUT}.files.done:${DIR}/blast/${RUNOUT}.diamond
 	printf "\n\n*****  I'm making files for all the blast hits ***** \n\n"
-	for i in  $$(cut -f1  ${DIR}/blast/${RUNOUT}.diamond | sort -u); do grep -Fw $$i ${DIR}/blast/${RUNOUT}.diamond | awk '{print $$1 "\n" $$2}' | sort -u --parallel $(CPU) ${DIR}/blast/$i.txt; done
+	for i in  $$(cut -f1  ${DIR}/blast/${RUNOUT}.diamond | sort -u); do grep -Fw $$i ${DIR}/blast/${RUNOUT}.diamond | awk '{print $$1 "\n" $$2}' | sort -u --parallel $(CPU) > ${DIR}/blast/$i.txt; done
 	touch ${DIR}/blast/${RUNOUT}.files.done
 
 ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.done
