@@ -85,6 +85,6 @@ ${DIR}/alignment/alignments.done:${DIR}/alignment/${RUNOUT}/alignment.files.done
 ${DIR}/tree/trees.done:${DIR}/alignment/alignments.done
 	printf "\n\n*****  I'm constructing the trees ***** \n\n"
 	for align in $$(ls ${DIR}/alignment/${RUNOUT}/*.aligned); do iqtree -quiet -ntmax $(CPU) -nt $(CPU) --runs 3 -m MFP+MERGE -s $$align; done
-	mv ${DIR}/alignment/${RUNOUT}/*iqtree ${DIR}/tree/${RUNOUT}/
-	rm -f ${DIR}/alignment/${RUNOUT}/*{bionj,mldist,treefile,log,gz}
+	mv ${DIR}/alignment/${RUNOUT}/*treefile ${DIR}/tree/${RUNOUT}/
+	rm -f ${DIR}/alignment/${RUNOUT}/*{bionj,mldist,phy,iqtree,log,gz,runtrees}
 	touch ${DIR}/tree/${RUNOUT}/trees.done
