@@ -9,10 +9,9 @@ SHELL=/bin/bash -o pipefail
 
 MAKEDIR := $(dir $(firstword $(MAKEFILE_LIST)))
 DIR := ${CURDIR}
-CPU=16
-EVALUE=1e-10
-TOP=0.01
-MEM=110
+CPU=24
+EVALUE=1e-5
+TOP=0.1
 RUNOUT =
 ASSEMBLY=
 DB=
@@ -21,13 +20,14 @@ VERSION := ${shell cat  ${MAKEDIR}/version.txt}
 .DEFAULT_GOAL := main
 
 help:
-main: setup welcome assemblycheck transdecoder blast files align_files mafft
+main: setup welcome assemblycheck transdecoder blast files align_files mafft iqtree
 blast:${DIR}/blast/${RUNOUT}.diamond
 setup:${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT}
 files:${DIR}/blast/${RUNOUT}.files.done
 align_files:${DIR}/alignment/${RUNOUT}/alignment.files.done
 transdecoder:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep
 mafft:${DIR}/alignment/alignments.done
+iqtree:${DIR}/tree/trees.done
 
 .DELETE_ON_ERROR:
 .PHONY:check assemblycheck
@@ -78,5 +78,10 @@ ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.don
 
 ${DIR}/alignment/alignments.done:${DIR}/alignment/${RUNOUT}/alignment.files.done
 	printf "\n\n*****  I'm constructing the alignments ***** \n\n"
-	for fasta in  $$(ls ${DIR}/alignment/${RUNOUT}/*.fasta); do mafft --thread $(CPU) --auto $$fasta > ${DIR}/alignment/$$fasta.aligned; done
+	for fasta in  $$(ls ${DIR}/alignment/${RUNOUT}/*.fasta); do mafft --thread $(CPU) --auto --quiet $$fasta > $$fasta.aligned; done
 	touch ${DIR}/alignment/alignments.done
+
+${DIR}/tree/trees.done:${DIR}/alignment/alignments.done
+	printf "\n\n*****  I'm constructing the trees ***** \n\n"
+	for align in $$(ls ${DIR}/alignment/${RUNOUT}/*.aligned); do iqtree -quiet -ntmax $(CPU) -nt $(CPU) --runs 3 -m MFP+MERGE -s $$align; done
+	touch ${DIR}/tree/trees.done
