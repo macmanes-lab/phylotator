@@ -32,10 +32,11 @@ iqtree:${DIR}/tree/trees.done
 .DELETE_ON_ERROR:
 .PHONY:check assemblycheck
 
-${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT}:
+${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT} ${DIR}/tree/:
 	@mkdir -p ${DIR}/blast
 	@mkdir -p ${DIR}/transdecoder/${RUNOUT}
 	@mkdir -p ${DIR}/alignment/${RUNOUT}
+	@mkdir -p ${DIR}/tree/${RUNOUT}
 
 
 
@@ -84,4 +85,6 @@ ${DIR}/alignment/alignments.done:${DIR}/alignment/${RUNOUT}/alignment.files.done
 ${DIR}/tree/trees.done:${DIR}/alignment/alignments.done
 	printf "\n\n*****  I'm constructing the trees ***** \n\n"
 	for align in $$(ls ${DIR}/alignment/${RUNOUT}/*.aligned); do iqtree -quiet -ntmax $(CPU) -nt $(CPU) --runs 3 -m MFP+MERGE -s $$align; done
-	touch ${DIR}/tree/trees.done
+	mv ${DIR}/alignment/${RUNOUT}/*iqtree ${DIR}/tree/${RUNOUT}/
+	rm -f ${DIR}/alignment/${RUNOUT}/*{bionj,mldist,treefile,log,gz}
+	touch ${DIR}/tree/${RUNOUT}/trees.done
