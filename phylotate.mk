@@ -77,5 +77,6 @@ ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.don
 	touch ${DIR}/alignment/${RUNOUT}/alignment.files.done
 
 ${DIR}/alignment/alignments.done:${DIR}/alignment/${RUNOUT}/alignment.files.done
-	for fasta in  $$(ls ${DIR}/alignment/${RUNOUT}/*.fasta); do mafft --thread $(CPU) --auto $fasta > ${DIR}/alignment/$fasta.aligned; done
+	printf "\n\n*****  I'm constructing the alignments ***** \n\n"
+	for fasta in  $$(ls ${DIR}/alignment/${RUNOUT}/*.fasta); do mafft --thread $(CPU) --auto $$fasta > ${DIR}/alignment/$$fasta.aligned; done
 	touch ${DIR}/alignment/alignments.done
