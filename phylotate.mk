@@ -21,12 +21,13 @@ VERSION := ${shell cat  ${MAKEDIR}/version.txt}
 .DEFAULT_GOAL := main
 
 help:
-main: setup welcome assemblycheck transdecoder blast files align_files
+main: setup welcome assemblycheck transdecoder blast files align_files mafft
 blast:${DIR}/blast/${RUNOUT}.diamond
 setup:${DIR}/blast ${DIR}/transdecoder ${DIR}/alignment/${RUNOUT}
 files:${DIR}/blast/${RUNOUT}.files.done
 align_files:${DIR}/alignment/${RUNOUT}/alignment.files.done
 transdecoder:${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep
+mafft:${DIR}/alignment/alignments.done
 
 .DELETE_ON_ERROR:
 .PHONY:check assemblycheck
@@ -74,3 +75,7 @@ ${DIR}/alignment/${RUNOUT}/alignment.files.done:${DIR}/blast/${RUNOUT}.files.don
 	printf "\n\n*****  I'm making fasta files for alignment ***** \n\n"
 	ls ${DIR}/blast/*txt 2> /dev/null | parallel -j $(CPU) "python ${MAKEDIR}/scripts/filter.py <(cat ${DIR}/transdecoder/${RUNOUT}/longest_orfs.pep ${MAKEDIR}/software/diamond/uniprot_sprot.fasta) {} > ${DIR}/alignment/${RUNOUT}/{/}.fasta 2> /dev/null"
 	touch ${DIR}/alignment/${RUNOUT}/alignment.files.done
+
+${DIR}/alignment/alignments.done:${DIR}/alignment/${RUNOUT}/alignment.files.done
+	for fasta in  $$(ls ${DIR}/alignment/${RUNOUT}/*.fasta); do mafft --thread $(CPU) --auto $fasta > ${DIR}/alignment/$fasta.aligned; done
+	touch ${DIR}/alignment/alignments.done
