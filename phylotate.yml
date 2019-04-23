@@ -10,5 +10,7 @@ dependencies:
   - diamond
   - transdecoder
   - r-phytools
+  - mafft
+  - iqtree
   - pip:
     - biopython
